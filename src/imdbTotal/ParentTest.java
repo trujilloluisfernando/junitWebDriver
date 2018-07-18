@@ -1,56 +1,63 @@
-package imdb;
+package imdbTotal;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
-import org.junit.Before;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import utils.Locators;
+import utils.Properties;
+
 
 public class ParentTest {
 	
 	protected WebDriver driver;
 	
-	@Before
 	public void setUp() {
-		System.setProperty("webdriver.chrome.driver", "C:\\test_automation\\drivers\\chromedriver.exe");
+		System.setProperty(Properties.CHROME, Properties.CHROME_DRIVER_ADDRESS);
 		driver = new ChromeDriver();
-		driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
-		
-		
-		
+		driver.manage().timeouts().implicitlyWait(Properties.MEDIUM_WAIT, TimeUnit.SECONDS);
 	}
 
 	
 	@After
 	public void tearDown() {
-		//driver.quit();
-		
+		driver.quit();	
 	}
+	
 	protected void validateMovieExists(String nombre, String expectedYear) {
-		WebElement firstMovie = driver.findElement(By.xpath("//*[@id=\"main\"]/div/div[2]/table/tbody/tr[1]/td[2]"));
+		WebElement firstMovie = driver.findElement(Locators.FIRST_MOVIE_LOCATOR);
+		assertNotNull(firstMovie);
 		if (firstMovie.getText().contains(expectedYear)) 
-			System.out.println("YES!");
+			System.out.println("The movie exists");
 		System.out.println(firstMovie.getText());
 		
 	}
 
 	protected void searchMovie(String title) {
-		WebElement searchBar = driver.findElement(By.id("navbar-query"));
+		WebElement searchBar = driver.findElement(Locators.NAVIGATION_BAR_LOCATOR);
+		assertNotNull(searchBar);
 		searchBar.sendKeys(title);
 		searchBar.submit();
 	}
 
 	protected void validatePage(String expectedTitle) {
 		String actualTitle = driver.getTitle();
-		if(expectedTitle.equals(actualTitle)) {
+		/*if(expectedTitle.equals(actualTitle)) {
 			System.out.println("Title is correct");
 		} else {
 			System.out.println("Title is Wrong");
-			System.exit(-1);
-		}
+		}*/
+		assertEquals(expectedTitle, actualTitle);
 		
 	}
 
@@ -60,9 +67,15 @@ public class ParentTest {
 	}
 	
 	protected void playTrailer() throws InterruptedException {
-		// TODO Auto-generated method stub
-		WebElement playButton = driver.findElement(By.xpath("//a[@itemprop='trailer']"));
+		WebDriverWait wait =  new WebDriverWait(driver,15);
+		WebElement playButton = driver.findElement(Locators.TRAILER_LOCATOR);
+		assertNotNull(playButton);
 		playButton.click();
+		
+		//wait.until(ExpectedConditions.textToBe(locator, value))
+
+		wait.until(ExpectedConditions.textToBe(By.xpath("\"//*[@id=\\\"imdb-jw-video-1\\\"]/div[9]/div[4]/div[2]/div[7]\")"), "00:15"));
+		System.out.println("Espera");
 		/*WebElement time = driver.findElement(By.xpath("//*[@id=\"imdb-jw-video-1\"]/div[9]/div[4]/div[2]/div[7]"));
 		if(time.getText().equals("00:00"))
 			System.out.println("Si se reprodujo el video");
@@ -72,14 +85,13 @@ public class ParentTest {
 
 	protected void validateCorrectMovie(String expectedTitle) {
 		// TODO Auto-generated method stub
-		if(driver.getTitle().equals(expectedTitle)) {
-			System.out.println("Si es la película correcta");
-		}
-		
+		assertEquals(driver.getTitle(), expectedTitle);
+		System.out.println("Si es la película correcta");		
 	}
 
-	protected void selectMovie(String nombre) {
-		WebElement movie = driver.findElement(By.linkText(nombre));
+	protected void selectMovie(String name) {
+		WebElement movie = driver.findElement(By.linkText(name));
+		assertNotNull(movie);
 		movie.click();
 		
 	}
@@ -90,12 +102,7 @@ public class ParentTest {
 		for (int i = 0; i < 3; i++) {
 			WebElement actor = driver.findElement(By.xpath("//*[@id=\"title-overview-widget\"]/div[3]/div[1]/div[4]/span[" + (i+1) + "]/a/span"));
 			actors[i] = actor.getText();
-			if(expectedActor[i].equals(actors[i])){
-				System.out.println(actors[i]);
-				System.out.println("Todo Bien");
-			} else {
-				System.out.println("Error");
-			}
+			assertEquals(actors[i], expectedActor[i]); 
 			
 		}
 		
